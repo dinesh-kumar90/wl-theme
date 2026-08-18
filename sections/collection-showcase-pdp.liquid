@@ -1,0 +1,178 @@
+{{ 'collection-showcase.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Loads the actual @font-face rules for whichever font the merchant picks
+  in the font_picker setting below. Required by Shopify — font_picker only
+  gives you a font's name/CSS values, it doesn't load the font file on its
+  own. Scoped to this section's id so multiple instances on the same page
+  (rare here, but harmless) don't collide.
+{%- endcomment -%}
+{%- if section.settings.header_font -%}
+  <style>
+    {{ section.settings.header_font | font_face: font_display: 'swap' }}
+  </style>
+{%- endif -%}
+
+{%- comment -%}
+  Vendor-matching: find a collection whose title equals this product's
+  vendor. Shopify enforces unique collection HANDLES, not unique TITLES,
+  so this is a first-match scan — if you ever have two collections
+  sharing a title, this takes whichever one appears first in `collections`.
+  For large catalogs, consider swapping this for a metafield that stores
+  the matched collection's handle directly (O(1) lookup, no scan).
+{%- endcomment -%}
+{%- assign matched_collection = null -%}
+{%- for c in collections -%}
+  {%- if c.title == product.vendor -%}
+    {%- assign matched_collection = c -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<section class="vendor-collection-showcase" style="padding: 64px 0;">
+  <div class="page-width">
+    {%- if matched_collection != blank -%}
+      {%- assign json_id = 'VendorCollectionData-' | append: section.id -%}
+
+      <script type="application/json" id="{{ json_id }}">
+        {
+          "vendor": {{ product.vendor | json }},
+          "cartAddUrl": {{ routes.cart_add_url | append: '.js' | json }},
+          "collection": {
+            "title": {{ matched_collection.title | json }},
+            "url": {{ matched_collection.url | json }},
+            "image": {% if matched_collection.image != blank %}{
+              "src": {{ matched_collection.image | image_url: width: 1600 | json }},
+              "alt": {{ matched_collection.image.alt | default: matched_collection.title | json }},
+              "width": {{ matched_collection.image.width | json }},
+              "height": {{ matched_collection.image.height | json }}
+            }{% else %}null{% endif %},
+            "description": {{ matched_collection.description | default: null | json }},
+            "products": [
+              {%- for p in matched_collection.products limit: section.settings.product_limit -%}
+                {%- assign v = p.selected_or_first_available_variant -%}
+                {
+                  "id": {{ p.id | json }},
+                  "title": {{ p.title | json }},
+                  "url": {{ p.url | json }},
+                  "image": {{ p.featured_image | image_url: width: 600 | json }},
+                  "imageAlt": {{ p.featured_image.alt | default: p.title | json }},
+                  "price": {{ v.price | json }},
+                  "compareAtPrice": {{ v.compare_at_price | json }},
+                  "currency": {{ cart.currency.symbol | json }},
+                  "rating": {{ p.metafields.reviews.rating.value.rating | default: null | json }},
+                  "reviewCount": {{ p.metafields.reviews.rating_count | default: null | json }},
+                  "variantId": {{ v.id | json }},
+                  "available": {{ v.available | json }}
+                }{% unless forloop.last %},{% endunless %}
+              {%- endfor -%}
+            ]
+          }
+        }
+      </script>
+
+      <collection-showcase
+        data-json-id="{{ json_id }}"
+        data-cards-mobile="{{ section.settings.cards_mobile }}"
+        data-cards-tablet="{{ section.settings.cards_tablet }}"
+        data-cards-desktop="{{ section.settings.cards_desktop }}"
+        data-view-all-text="{{ section.settings.view_all }}"
+        style="
+          {% if section.settings.bg_color != blank %}--vcs-bg: {{ section.settings.bg_color }};{% endif %}
+          {% if section.settings.text_color != blank %}--vcs-text: {{ section.settings.text_color }};{% endif %}
+          {% if section.settings.header_color != blank %}--vcs-header-color: {{ section.settings.header_color }};{% endif %}
+          {% if section.settings.header_font != blank %}--vcs-header-font: {{ section.settings.header_font.family }}, {{ section.settings.header_font.fallback_families }};
+          --vcs-header-weight: {{ section.settings.header_font.weight }};{% endif %}
+        "
+      ></collection-showcase>
+    {%- endif -%}
+    {%- comment -%}
+      No matched_collection → nothing renders here at all, per spec.
+      The <section> wrapper and page-width div are harmless empty markup
+      in that case; if you want zero output whatsoever, move the
+      {% if %} to wrap the <section> tag itself instead.
+    {%- endcomment -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Vendor Collection (PDP)",
+  "settings": [
+    {
+      "type": "range",
+      "id": "product_limit",
+      "label": "Products to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Cards per view"
+    },
+    {
+      "type": "range",
+      "id": "cards_mobile",
+      "label": "Mobile",
+      "min": 1,
+      "max": 3,
+      "step": 0.1,
+      "default": 1.2
+    },
+    {
+      "type": "range",
+      "id": "cards_tablet",
+      "label": "Tablet",
+      "min": 1,
+      "max": 4,
+      "step": 0.5,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "label": "Desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "view_all",
+      "label": "View All text",
+      "default": "View All"
+    },
+    {
+      "type": "header",
+      "content": "Design tokens"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background color"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color"
+    },
+    {
+      "type": "color",
+      "id": "header_color",
+      "label": "Heading color"
+    },
+    {
+      "type": "font_picker",
+      "id": "header_font",
+      "label": "Heading font",
+      "default": "helvetica_n4"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
