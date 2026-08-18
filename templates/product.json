@@ -348,7 +348,7 @@
         "card_bg_color": "#ffffff",
         "card_text_color": "{{ settings.color_palette.foreground }}",
         "card_muted_color": "#9A9A9A",
-        "card_border_color": "{{ settings.color_palette.background }}",
+        "card_border_color": "#9A9A9A",
         "sale_color": "#DC2626",
         "heading_font": "playfair_display_n6",
         "body_font": "inter_n4",
