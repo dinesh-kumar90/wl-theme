@@ -332,7 +332,7 @@
       "settings": {
         "product_limit": 8,
         "view_all": "View All",
-        "cards_mobile": 1.2,
+        "cards_mobile": 1.5,
         "cards_tablet": 3,
         "cards_desktop": 4,
         "max_width": 1240,
