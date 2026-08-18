@@ -306,7 +306,7 @@ collection-showcase {
 }
 .cs-add-btn:disabled {
   background: var(--vcs-color-card-line, #e7e2d8);
-  color: var(--vcs-color-card-muted, #8a8378);
+  color: #fff;
   cursor: not-allowed;
 }
 
