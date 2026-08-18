@@ -39,16 +39,29 @@ jobs:
         working-directory: react-src
         run: npm run build
 
-      # Note: GITHUB_TOKEN-authored commits do not retrigger push-based
-      # workflows, so this will not loop.
+      # Chunk filenames are content-hashed (theme-react-CollectionShowcase-xxxx.js,
+      # theme-react-ProductGrid-xxxx.js, theme-react-theme-react-vendor-xxxx.js,
+      # etc.), so this globs rather than naming exact files. -A also picks up
+      # any new chunk files a rebuild produces; git rm --cached on stale ones
+      # happens naturally since `git add -A` stages deletions of files that
+      # no longer exist after old hashed chunks get replaced... but Vite
+      # doesn't delete old chunks on its own (emptyOutDir: false), so we
+      # explicitly clear old theme-react-*.js files before building.
+      - name: Remove stale hashed chunks before rebuilding
+        run: rm -f assets/theme-react-*.js
+
+      - name: Rebuild (with stale chunks cleared)
+        working-directory: react-src
+        run: npm run build
+
       - name: Commit compiled assets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add assets/collection-showcase.js assets/collection-showcase.css
+          git add assets/theme-react*.js assets/collection-showcase.css
           if git diff --cached --quiet; then
             echo "No asset changes to commit."
           else
-            git commit -m "chore: rebuild collection-showcase assets [skip ci]"
+            git commit -m "chore: rebuild theme-react assets [skip ci]"
             git push
           fi
