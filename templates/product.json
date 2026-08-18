@@ -335,9 +335,9 @@
         "cards_tablet": 2,
         "cards_desktop": 4,
         "view_all": "View All",
-        "bg_color": "",
-        "text_color": "",
-        "header_color": "",
+        "bg_color": "{{ settings.color_palette.foreground }}",
+        "text_color": "{{ settings.color_palette.background }}",
+        "header_color": "{{ settings.color_palette.background }}",
         "header_font": "sans_serif_n4"
       }
     },
