@@ -11,7 +11,7 @@ import { ProductCard, addToCart } from "./ProductCard.jsx";
  *
  * cardsPerView={{ mobile: 1.2, tablet: 2, desktop: 4 }}
  */
-export function ProductCarousel({ products, cartAddUrl, onAdded, cardsPerView }) {
+export function ProductCarousel({ products, cartAddUrl, cartUrl, onAdded, cardsPerView }) {
   const trackRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [atStart, setAtStart] = useState(true);
@@ -49,7 +49,7 @@ export function ProductCarousel({ products, cartAddUrl, onAdded, cardsPerView })
   };
 
   const handleAdd = (product) =>
-    addToCart(product, cartAddUrl, {
+    addToCart(product, cartAddUrl, cartUrl, {
       onStart: setAddingId,
       onSettle: () => {
         setAddingId(null);

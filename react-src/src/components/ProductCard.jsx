@@ -1,3 +1,6 @@
+
+import { CartLinesUpdateEvent, CartErrorEvent } from "@shopify/events";
+
 export function Star() {
   return (
     <svg className="cs-star is-filled" width="14" height="14" viewBox="0 0 20 20" aria-hidden="true">
@@ -97,22 +100,60 @@ export function ProductCard({ product, onAdd, addingId }) {
  * Shared add-to-cart handler. Both ProductGrid and VendorCollectionSection
  * use the same Ajax Cart API call, same event dispatch — kept in one place
  * so cart behavior can't drift between the two components.
+ *
  */
-export async function addToCart(product, cartAddUrl, { onStart, onSettle }) {
+export async function addToCart(product, cartAddUrl, cartUrl, { onStart, onSettle }) {
   if (!product.variantId || !cartAddUrl) return;
   onStart(product.id);
+
+  const deferred = CartLinesUpdateEvent.createPromise();
+  document.dispatchEvent(
+    new CartLinesUpdateEvent({
+      action: "add",
+      context: "product",
+      lines: [{ merchandiseId: product.variantId, quantity: 1 }],
+      promise: deferred.promise,
+    })
+  );
+
   try {
     const res = await fetch(cartAddUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ items: [{ id: product.variantId, quantity: 1 }] }),
     });
-    if (!res.ok) throw new Error("Add to cart failed");
-    const data = await res.json();
-    document.dispatchEvent(new CustomEvent("cart:updated", { detail: data }));
+    const addResult = await res.json();
+    const didError = !res.ok || Boolean(addResult.status);
+
+    if (didError) {
+      document.dispatchEvent(
+        new CartErrorEvent({ error: addResult.message || "Add to cart failed", code: "INVALID" })
+      );
+    }
+
+    // Re-fetch the full cart so the header bubble / drawer get real totals —
+    // same as Horizon's own product-form component does after an add.
+    const ajaxCart = await fetch(cartUrl, { headers: { Accept: "application/json" } }).then((r) => r.json());
+
+    deferred.resolve({
+      cart: CartLinesUpdateEvent.createCartFromAjaxResponse(ajaxCart),
+      detail: {
+        items: ajaxCart.items,
+        source: "collection-showcase",
+        itemCount: 1,
+        productId: product.id,
+        didError,
+      },
+    });
+
+    if (!didError) {
+      const drawer = document.querySelector("#cart-drawer");
+      // whenDefined guards against the (unlikely) case of this resolving
+      if (drawer) customElements.whenDefined("theme-drawer").then(() => drawer.open());
+    }
   } catch (err) {
     console.error(err);
-    document.dispatchEvent(new CustomEvent("cart:error", { detail: err }));
+    deferred.reject(err);
   } finally {
     onSettle();
   }

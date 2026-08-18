@@ -1,152 +1,167 @@
-/* ---------- Brand story block (static, no React) ---------- */
-.brand-story {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
-  margin-bottom: 56px;
-  align-items: center;
-}
-@media (min-width: 900px) {
-  .brand-story {
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-  }
+/* ==========================================================================
+   Vendor Collection Showcase — design token contract
+   ==========================================================================
+   Every --vcs-* variable below is set inline on the section root element by Liquid, straight from the section's schema settings (see
+   "Layout" / "Colors" / "Typography" / "Spacing" groups in
+   collection-showcase-pdp.liquid).
+   ========================================================================== */
+collection-showcase {
+  display: block;
 }
 
-.brand-story-media img {
+.vcs-root,
+.cs-root {
+  font-family: var(--vcs-font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+}
+
+/* ---------- Layout ---------- */
+.vcs-root {
+  background: var(--vcs-color-bg, #100e0b);
+  padding-block: var(--vcs-space-section-y, 64px);
+  padding-inline: var(--vcs-space-section-x, 32px);
+}
+
+.vcs-inner {
+  max-width: var(--vcs-max-width, 1240px);
+  margin-inline: auto;
+}
+
+/* ---------- Hero: brand image + brand story copy ---------- */
+.vcs-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--vcs-space-hero-gap, 48px);
+  align-items: center;
+  margin-bottom: var(--vcs-space-section-y, 64px);
+}
+
+/* Rule: no collection image → the brand story copy takes the full row
+   instead of leaving an empty media column beside it. */
+@media (min-width: 900px) {
+  .vcs-hero--with-media {
+    grid-template-columns: 1.1fr 1fr;
+  }
+}
+.vcs-hero--full .vcs-hero-content,
+.vcs-hero--full .vcs-hero-description {
+  max-width: none;
+}
+
+.vcs-hero-media img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: var(--vcs-radius, 12px);
   object-fit: cover;
 }
 
-.brand-story-eyebrow {
+.vcs-eyebrow {
   display: flex;
   align-items: center;
   gap: 16px;
   margin: 0 0 18px;
-  font-size: 12px;
+  font-size: var(--vcs-size-eyebrow, 12px);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #d9a13c;
+  color: var(--vcs-color-accent, #d9a13c);
 }
-.brand-story-eyebrow::after {
+.vcs-eyebrow::after {
   content: "";
   flex: 1;
   height: 1px;
-  background: #d9a13c;
+  background: currentColor;
   opacity: 0.5;
 }
 
-.brand-story-heading {
+.vcs-hero-heading {
   margin: 0 0 16px;
-  font-size: clamp(24px, 3vw, 34px);
-  line-height: 1.2;
-  color: #171512;
+  font-family: var(--vcs-font-heading, Georgia, "Iowan Old Style", "Palatino Linotype", serif);
+  font-weight: var(--vcs-weight-heading, 600);
+  font-size: var(--vcs-size-hero-heading, clamp(28px, 4vw, 44px));
+  line-height: 1.15;
+  color: var(--vcs-color-heading, #f8f4ea);
 }
 
-.brand-story-description {
-  color: #59524a;
-  font-size: 16px;
-  line-height: 1.7;
-}
-.brand-story-description p {
-  margin: 0 0 12px;
-}
-
-/* ---------- Vendor collection section (fully React-owned) ---------- */
-.vcs-root {
-  --cs-accent: #d9a13c;
-  --cs-ink: #171512;
-  --cs-muted: #8a8378;
-  --cs-line: #e7e2d8;
-
-  /* Design tokens — merchant-editable via section schema, applied inline
-     as CSS custom properties by CollectionShowcase.jsx. Falls back to
-     these defaults when a token isn't set. */
-  background: var(--vcs-bg, transparent);
-  color: var(--vcs-text, var(--cs-ink));
-  padding: 24px;
-  border-radius: 12px;
-}
-
-.vcs-media {
-  margin-bottom: 24px;
-}
-.vcs-media img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.vcs-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 24px;
-}
-
-.vcs-title {
-  margin: 0 0 8px;
-  font-size: clamp(22px, 2.6vw, 28px);
-  color: var(--vcs-header-color, var(--cs-ink));
-  font-family: var(--vcs-header-font, inherit);
-  font-weight: var(--vcs-header-weight, 700);
-}
-
-.vcs-description {
-  color: var(--vcs-text, #59524a);
-  font-size: 15px;
-  line-height: 1.6;
+.vcs-hero-description {
+  color: var(--vcs-color-text, #efe9df);
+  font-size: var(--vcs-size-hero-body, 16px);
+  line-height: 24px;
   max-width: 60ch;
 }
-.vcs-description p {
-  margin: 0 0 8px;
+.vcs-hero-description p {
+  margin: 0 0 1em;
+}
+.vcs-hero-description p:last-child {
+  margin-bottom: 0;
 }
 
-.cs-root {
-  --cs-accent: #d9a13c;
-  --cs-ink: #171512;
-  --cs-muted: #8a8378;
-  --cs-line: #e7e2d8;
-  --cs-sale: #c0392b;
-  font-family: inherit;
+/* ---------- "More from {vendor}" grid header ---------- */
+.vcs-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: var(--vcs-space-grid-gap, 20px);
+}
+
+.vcs-grid-heading {
+  margin: 0;
+  font-size: var(--vcs-size-grid-heading, 13px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--vcs-color-text, #efe9df);
 }
 
 .cs-header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: var(--vcs-space-grid-gap, 20px);
+}
+.cs-header-spacer {
+  flex: 1;
 }
 
 .cs-view-all {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--vcs-size-grid-heading, 13px);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--cs-accent);
+  color: var(--vcs-color-accent, #d9a13c);
   text-decoration: none;
+  flex-shrink: 0;
+  line-height: 1;
 }
-.cs-view-all:hover {
-  text-decoration: underline;
+
+/* ==========================================================================
+   Product carousel — shared by CollectionShowcase and ProductGrid
+   ==========================================================================
+   Cards-per-view breakpoints below key off the carousel's own rendered
+   width (container queries), not the viewport (media queries). This section
+   can end up in a narrower box than the viewport suggests — e.g. the cart
+   drawer opening squeezes the page content — so a viewport-based @media
+   query would keep showing the desktop card count even though there's no
+   room for it. .cs-carousel establishes the container; .cs-track queries it.
+   ========================================================================== */
+.cs-carousel {
+  container-type: inline-size;
+  container-name: cs-carousel;
 }
 
 .cs-track {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - (var(--cs-cards-mobile, 1.2) - 1) * 20px) / var(--cs-cards-mobile, 1.2));
-  gap: 20px;
+  grid-auto-columns: calc(
+    (100% - (var(--cs-cards-mobile, 1.2) - 1) * var(--vcs-space-grid-gap, 20px)) / var(--cs-cards-mobile, 1.2)
+  );
+  gap: var(--vcs-space-grid-gap, 20px);
   list-style: none;
-  margin: 0 0 24px;
+  margin: 0 0 var(--vcs-space-grid-gap, 20px);
   padding: 4px 4px 8px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -156,15 +171,19 @@
   display: none;
 }
 
-@media (min-width: 700px) {
+@container cs-carousel (min-width: 700px) {
   .cs-track {
-    grid-auto-columns: calc((100% - (var(--cs-cards-tablet, 2) - 1) * 20px) / var(--cs-cards-tablet, 2));
+    grid-auto-columns: calc(
+      (100% - (var(--cs-cards-tablet, 2) - 1) * var(--vcs-space-grid-gap, 20px)) / var(--cs-cards-tablet, 2)
+    );
   }
 }
 
-@media (min-width: 1000px) {
+@container cs-carousel (min-width: 1000px) {
   .cs-track {
-    grid-auto-columns: calc((100% - (var(--cs-cards-desktop, 4) - 1) * 20px) / var(--cs-cards-desktop, 4));
+    grid-auto-columns: calc(
+      (100% - (var(--cs-cards-desktop, 4) - 1) * var(--vcs-space-grid-gap, 20px)) / var(--cs-cards-desktop, 4)
+    );
   }
 }
 
@@ -173,10 +192,10 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border: 1px solid var(--cs-line);
-  border-radius: 14px;
-  padding: 18px 18px 22px;
-  background: #fff;
+  background: var(--vcs-color-card-bg, #ffffff);
+  border-radius: var(--vcs-radius, 12px);
+  padding: var(--vcs-card-padding, 20px) var(--vcs-card-padding, 20px) calc(var(--vcs-card-padding, 20px) + 4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
 }
 
 .cs-card-media {
@@ -189,11 +208,12 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  aspect-ratio: 1 / 1;
 }
 .cs-card-media-placeholder {
   width: 100%;
   height: 100%;
-  background: var(--cs-line);
+  background: var(--vcs-color-card-line, #e7e2d8);
   border-radius: 8px;
 }
 
@@ -202,37 +222,43 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 10px;
-  font-size: 13px;
-  color: var(--cs-ink);
+  font-size: 1.2rem;
+  color: var(--vcs-color-card-ink, #171512);
 }
 .cs-rating-star {
-  color: var(--cs-accent);
+  color: var(--vcs-color-accent, #d9a13c);
   display: inline-flex;
 }
 .cs-rating-value {
-  font-weight: 700;
+  font-weight: 600;
 }
 .cs-rating-count {
-  color: var(--cs-muted);
+  color: var(--vcs-color-card-muted, #9A9A9A);
 }
 
 .cs-card-title {
-  display: block;
-  font-size: 16px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--vcs-size-card-title, 17px);
   font-weight: 700;
   line-height: 1.3;
-  color: var(--cs-ink);
+  min-height: calc(1.3em * 2);
+  color: var(--vcs-color-card-ink, #171512);
   text-decoration: none;
   margin-bottom: 4px;
+
 }
 .cs-card-title:hover {
-  text-decoration: underline;
+  /* text-decoration: underline; */
 }
 
 .cs-card-variant {
   margin: 0 0 10px;
-  font-size: 13px;
-  color: var(--cs-muted);
+  font-size: var(--vcs-size-card-meta, 14px);
+  color: var(--vcs-color-card-muted, #8a8378);
+  font-weight: 300;
 }
 
 .cs-card-price {
@@ -240,20 +266,20 @@
   align-items: baseline;
   gap: 8px;
   margin: 0 0 16px;
-  font-size: 16px;
+  font-size: var(--vcs-size-price, 18px);
 }
 .cs-price {
   font-weight: 700;
-  color: var(--cs-ink);
+  color: var(--vcs-color-card-ink, #171512);
 }
 .cs-price-sale {
   font-weight: 700;
-  color: var(--cs-sale);
+  color: var(--vcs-color-sale, #c0392b);
 }
 .cs-price-compare {
-  color: var(--cs-muted);
+  color: var(--vcs-color-card-muted, #8a8378);
   text-decoration: line-through;
-  font-size: 14px;
+  font-size: var(--vcs-size-price-compare, 17px);
 }
 
 .cs-add-btn {
@@ -265,9 +291,9 @@
   padding: 13px 18px;
   border-radius: 999px;
   border: none;
-  background: var(--cs-ink);
+  background: var(--vcs-color-card-ink, #171512);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--vcs-size-button, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.1s ease;
@@ -279,53 +305,57 @@
   transform: scale(0.98);
 }
 .cs-add-btn:disabled {
-  background: var(--cs-line);
-  color: var(--cs-muted);
+  background: var(--vcs-color-card-line, #e7e2d8);
+  color: var(--vcs-color-card-muted, #8a8378);
   cursor: not-allowed;
 }
 
+/* ---------- Progress bar + prev/next controls ---------- */
 .cs-controls {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .cs-progress {
   flex: 1;
-  height: 3px;
+  height: 4px;
   border-radius: 999px;
-  background: var(--cs-line);
+  background: var(--vcs-color-line, rgba(255, 255, 255, 0.16));
   overflow: hidden;
 }
 .cs-progress-fill {
   height: 100%;
-  background: var(--cs-accent);
+  background: var(--vcs-color-accent, #d9a13c);
   border-radius: 999px;
   transition: width 0.2s ease;
 }
 
 .cs-arrows {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 .cs-arrow {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-  border: 1px solid var(--cs-line);
-  background: #fff;
-  color: var(--cs-ink);
+  border: 1px solid var(--vcs-color-line, rgba(255, 255, 255, 0.16));
+  background: transparent;
+  color: var(--vcs-color-text, #efe9df);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
 .cs-arrow:hover:not(:disabled) {
-  border-color: var(--cs-ink);
+  border-color: var(--vcs-color-accent, #d9a13c);
+  color: var(--vcs-color-accent, #d9a13c);
 }
 .cs-arrow:disabled {
-  color: var(--cs-line);
+  color: var(--vcs-color-text-muted, #a89f90);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -336,5 +366,48 @@
   .cs-add-btn,
   .cs-progress-fill {
     transition: none;
+  }
+}
+
+
+@media screen and (max-width: 749px) {
+  .vcs-hero {
+    margin-bottom: 48px;
+  }
+  .vcs-hero-heading {
+    font-size: 24px;
+  }
+  .vcs-hero-description {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .vcs-grid-heading {
+    font-size: 14px;
+  }
+  .cs-view-all {
+    font-size: 12px;
+  }
+
+  .cs-rating {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .cs-card-title {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .cs-card-variant {
+    font-size: 13px;
+  }
+  .cs-card-price {
+    font-size: 15px;
+  }
+  .cs-price-compare {
+    font-size: 13px;
+  }
+  .cs-add-btn {
+    font-size: 16px;
+    line-height: 24px;
+    padding: 10px 16px;
   }
 }

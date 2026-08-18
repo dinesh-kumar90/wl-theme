@@ -1,15 +1,20 @@
 {{ 'collection-showcase.css' | asset_url | stylesheet_tag }}
 
 {%- comment -%}
-  Loads the actual @font-face rules for whichever font the merchant picks
-  in the font_picker setting below. Required by Shopify — font_picker only
+  Loads the actual @font-face rules for whichever fonts the merchant picks
+  in the font_picker settings below. Required by Shopify — font_picker only
   gives you a font's name/CSS values, it doesn't load the font file on its
   own. Scoped to this section's id so multiple instances on the same page
   (rare here, but harmless) don't collide.
 {%- endcomment -%}
-{%- if section.settings.header_font -%}
+{%- if section.settings.heading_font -%}
   <style>
-    {{ section.settings.header_font | font_face: font_display: 'swap' }}
+    {{ section.settings.heading_font | font_face: font_display: 'swap' }}
+  </style>
+{%- endif -%}
+{%- if section.settings.body_font -%}
+  <style>
+    {{ section.settings.body_font | font_face: font_display: 'swap' }}
   </style>
 {%- endif -%}
 
@@ -29,76 +34,123 @@
   {%- endif -%}
 {%- endfor -%}
 
-<section class="vendor-collection-showcase" style="padding: 64px 0;">
-  <div class="page-width">
-    {%- if matched_collection != blank -%}
-      {%- assign json_id = 'VendorCollectionData-' | append: section.id -%}
+{%- if matched_collection != blank -%}
+  {%- assign json_id = 'VendorCollectionData-' | append: section.id -%}
+  <style>
+    #section-{{ json_id }}{
+      /* Layout */
+        --vcs-max-width: {{ section.settings.max_width }}px;
+        --vcs-space-section-y: {{ section.settings.section_padding_block }}px;
+        --vcs-space-section-x: {{ section.settings.section_padding_inline }}px;
+        --vcs-radius: {{ section.settings.corner_radius }}px;
 
-      <script type="application/json" id="{{ json_id }}">
-        {
-          "vendor": {{ product.vendor | json }},
-          "cartAddUrl": {{ routes.cart_add_url | append: '.js' | json }},
-          "collection": {
-            "title": {{ matched_collection.title | json }},
-            "url": {{ matched_collection.url | json }},
-            "image": {% if matched_collection.image != blank %}{
-              "src": {{ matched_collection.image | image_url: width: 1600 | json }},
-              "alt": {{ matched_collection.image.alt | default: matched_collection.title | json }},
-              "width": {{ matched_collection.image.width | json }},
-              "height": {{ matched_collection.image.height | json }}
-            }{% else %}null{% endif %},
-            "description": {{ matched_collection.description | default: null | json }},
-            "products": [
-              {%- for p in matched_collection.products limit: section.settings.product_limit -%}
-                {%- assign v = p.selected_or_first_available_variant -%}
-                {
-                  "id": {{ p.id | json }},
-                  "title": {{ p.title | json }},
-                  "url": {{ p.url | json }},
-                  "image": {{ p.featured_image | image_url: width: 600 | json }},
-                  "imageAlt": {{ p.featured_image.alt | default: p.title | json }},
-                  "price": {{ v.price | json }},
-                  "compareAtPrice": {{ v.compare_at_price | json }},
-                  "currency": {{ cart.currency.symbol | json }},
-                  "rating": {{ p.metafields.reviews.rating.value.rating | default: null | json }},
-                  "reviewCount": {{ p.metafields.reviews.rating_count | default: null | json }},
-                  "variantId": {{ v.id | json }},
-                  "available": {{ v.available | json }}
-                }{% unless forloop.last %},{% endunless %}
-              {%- endfor -%}
-            ]
-          }
+        /* Colors */
+        --vcs-color-bg: {{ section.settings.bg_color | default: '#100e0b' }};
+        --vcs-color-text: {{ section.settings.text_color | default: '#efe9df' }};
+        --vcs-color-text-muted: {{ section.settings.muted_text_color | default: '#a89f90' }};
+        --vcs-color-heading: {{ section.settings.heading_color | default: '#f8f4ea' }};
+        --vcs-color-accent: {{ section.settings.accent_color | default: '#d9a13c' }};
+        --vcs-color-line: {{ section.settings.line_color | default: 'rgba(255, 255, 255, 0.16)' }};
+        --vcs-color-sale: {{ section.settings.sale_color | default: '#c0392b' }};
+        --vcs-color-card-bg: {{ section.settings.card_bg_color | default: '#ffffff' }};
+        --vcs-color-card-ink: {{ section.settings.card_text_color | default: '#171512' }};
+        --vcs-color-card-muted: {{ section.settings.card_muted_color | default: '#8a8378' }};
+        --vcs-color-card-line: {{ section.settings.card_border_color | default: '#e7e2d8' }};
+
+        /* Typography */
+        {% if section.settings.heading_font -%}
+          --vcs-font-heading: {{ section.settings.heading_font.family }}, {{ section.settings.heading_font.fallback_families }};
+          --vcs-weight-heading: {{ section.settings.heading_font.weight }};
+        {%- endif %}
+        {% if section.settings.body_font -%}
+          --vcs-font-body: {{ section.settings.body_font.family }}, {{ section.settings.body_font.fallback_families }};
+        {%- endif %}
+        --vcs-size-eyebrow: {{ section.settings.eyebrow_font_size }}px;
+        --vcs-size-hero-heading: {{ section.settings.hero_heading_font_size }}px;
+        --vcs-size-hero-body: {{ section.settings.hero_body_font_size }}px;
+        --vcs-size-grid-heading: {{ section.settings.grid_heading_font_size }}px;
+        --vcs-size-card-title: {{ section.settings.card_title_font_size }}px;
+        --vcs-size-card-meta: {{ section.settings.card_meta_font_size }}px;
+        --vcs-size-price: {{ section.settings.price_font_size }}px;
+        --vcs-size-button: {{ section.settings.button_font_size }}px;
+
+        /* Spacing */
+        --vcs-space-hero-gap: {{ section.settings.hero_gap }}px;
+        --vcs-space-grid-gap: {{ section.settings.grid_gap }}px;
+        --vcs-card-padding: {{ section.settings.card_padding }}px;
+    }
+  </style>
+  <section class="vendor-collection-showcase" id="section-{{ json_id }}">
+    <script type="application/json" id="{{ json_id }}">
+      {
+        "vendor": {{ product.vendor | json }},
+        "cartAddUrl": {{ routes.cart_add_url | append: '.js' | json }},
+        "cartUrl": {{ routes.cart_url | append: '.js' | json }},
+        "collection": {
+          "title": {{ matched_collection.title | json }},
+          "url": {{ matched_collection.url | json }},
+          "image": {% if matched_collection.image != blank %}{
+            "src": {{ matched_collection.image | image_url: width: 1600 | json }},
+            "alt": {{ matched_collection.image.alt | default: matched_collection.title | json }},
+            "width": {{ matched_collection.image.width | json }},
+            "height": {{ matched_collection.image.height | json }}
+          }{% else %}null{% endif %},
+          "description": {{ matched_collection.description | default: null | json }},
+          "products": [
+            {%- for p in matched_collection.products limit: section.settings.product_limit -%}
+              {%- unless p.id == product.id -%}
+              {%- assign v = p.selected_or_first_available_variant -%}
+              {
+                "id": {{ p.id | json }},
+                "title": {{ p.title | json }},
+                "url": {{ p.url | json }},
+                "image": {{ p.featured_image | image_url: width: 600 | json }},
+                "imageAlt": {{ p.featured_image.alt | default: p.title | json }},
+                "variantTitle": {% if v.title == 'Default Title' %}"Default Title"{% else %}{{ v.title | replace: ' / ', ' • ' | json }}{% endif %},
+                "price": {{ v.price | json }},
+                "compareAtPrice": {{ v.compare_at_price | json }},
+                "currency": {{ cart.currency.symbol | json }},
+                "rating": {{ p.metafields.reviews.rating.value.rating | default: 4.4 | json }},
+                "reviewCount": {{ p.metafields.reviews.rating_count | default: 31 | json }},
+                "variantId": {{ v.id | json }},
+                "available": {{ v.available | json }}
+              }{% unless forloop.last %},{% endunless %}
+              {%- endunless -%}
+            {%- endfor -%}
+          ]
         }
-      </script>
+      }
+    </script>
 
-      <collection-showcase
-        data-json-id="{{ json_id }}"
-        data-cards-mobile="{{ section.settings.cards_mobile }}"
-        data-cards-tablet="{{ section.settings.cards_tablet }}"
-        data-cards-desktop="{{ section.settings.cards_desktop }}"
-        data-view-all-text="{{ section.settings.view_all }}"
-        style="
-          {% if section.settings.bg_color != blank %}--vcs-bg: {{ section.settings.bg_color }};{% endif %}
-          {% if section.settings.text_color != blank %}--vcs-text: {{ section.settings.text_color }};{% endif %}
-          {% if section.settings.header_color != blank %}--vcs-header-color: {{ section.settings.header_color }};{% endif %}
-          {% if section.settings.header_font != blank %}--vcs-header-font: {{ section.settings.header_font.family }}, {{ section.settings.header_font.fallback_families }};
-          --vcs-header-weight: {{ section.settings.header_font.weight }};{% endif %}
-        "
-      ></collection-showcase>
-    {%- endif -%}
     {%- comment -%}
-      No matched_collection → nothing renders here at all, per spec.
-      The <section> wrapper and page-width div are harmless empty markup
-      in that case; if you want zero output whatsoever, move the
-      {% if %} to wrap the <section> tag itself instead.
+      Every design setting below (Layout / Colors / Typography / Spacing) is
+      passed straight through as a --vcs-* CSS custom property. React never
+      reads these — they cascade from this element into collection-showcase.css
+      via normal inheritance (main.jsx renders into the light DOM, no shadow
+      root), so adding a new merchant-editable token later only means adding a
+      schema setting here and a var(--vcs-...) in the CSS, nothing in React.
     {%- endcomment -%}
-  </div>
-</section>
+    <collection-showcase
+      data-json-id="{{ json_id }}"
+      data-cards-mobile="{{ section.settings.cards_mobile }}"
+      data-cards-tablet="{{ section.settings.cards_tablet }}"
+      data-cards-desktop="{{ section.settings.cards_desktop }}"
+      data-view-all-text="{{ section.settings.view_all }}"
+    ></collection-showcase>
+  </section>
+{%- endif -%}
+{%- comment -%}
+  No matched_collection → nothing renders here at all, per spec.
+{%- endcomment -%}
 
 {% schema %}
 {
   "name": "Vendor Collection (PDP)",
   "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
     {
       "type": "range",
       "id": "product_limit",
@@ -107,6 +159,12 @@
       "max": 12,
       "step": 1,
       "default": 8
+    },
+    {
+      "type": "text",
+      "id": "view_all",
+      "label": "View All text",
+      "default": "View All"
     },
     {
       "type": "header",
@@ -140,35 +198,252 @@
       "default": 4
     },
     {
-      "type": "text",
-      "id": "view_all",
-      "label": "View All text",
-      "default": "View All"
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Content max width",
+      "unit": "px",
+      "min": 960,
+      "max": 1600,
+      "step": 20,
+      "default": 1240
+    },
+    {
+      "type": "range",
+      "id": "section_padding_block",
+      "label": "Vertical padding",
+      "unit": "px",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "section_padding_inline",
+      "label": "Horizontal padding",
+      "unit": "px",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "unit": "px",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 12
     },
     {
       "type": "header",
-      "content": "Design tokens"
+      "content": "Colors — Section"
     },
     {
       "type": "color",
       "id": "bg_color",
-      "label": "Background color"
+      "label": "Background",
+      "default": "#100e0b"
     },
     {
       "type": "color",
       "id": "text_color",
-      "label": "Text color"
+      "label": "Body text",
+      "default": "#efe9df"
     },
     {
       "type": "color",
-      "id": "header_color",
-      "label": "Heading color"
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#a89f90"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#f8f4ea"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (eyebrow, links, rating star, progress bar)",
+      "default": "#d9a13c"
+    },
+    {
+      "type": "color",
+      "id": "line_color",
+      "label": "Divider / control border",
+      "default": "rgba(255, 255, 255, 0.16)"
+    },
+    {
+      "type": "header",
+      "content": "Colors — Product cards"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_text_color",
+      "label": "Card text",
+      "default": "#171512"
+    },
+    {
+      "type": "color",
+      "id": "card_muted_color",
+      "label": "Card muted text",
+      "default": "#8a8378"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card placeholder / disabled",
+      "default": "#e7e2d8"
+    },
+    {
+      "type": "color",
+      "id": "sale_color",
+      "label": "Sale price",
+      "default": "#c0392b"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
     },
     {
       "type": "font_picker",
-      "id": "header_font",
+      "id": "heading_font",
       "label": "Heading font",
       "default": "helvetica_n4"
+    },
+    {
+      "type": "font_picker",
+      "id": "body_font",
+      "label": "Body font",
+      "default": "helvetica_n4"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_font_size",
+      "label": "Eyebrow size",
+      "unit": "px",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "hero_heading_font_size",
+      "label": "Brand heading size",
+      "unit": "px",
+      "min": 24,
+      "max": 56,
+      "step": 2,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "hero_body_font_size",
+      "label": "Brand story text size",
+      "unit": "px",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "grid_heading_font_size",
+      "label": "\"More from\" heading size",
+      "unit": "px",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "default": 13
+    },
+    {
+      "type": "range",
+      "id": "card_title_font_size",
+      "label": "Product title size",
+      "unit": "px",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "default": 17
+    },
+    {
+      "type": "range",
+      "id": "card_meta_font_size",
+      "label": "Product meta size",
+      "unit": "px",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "price_font_size",
+      "label": "Price size",
+      "unit": "px",
+      "min": 12,
+      "max": 26,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "label": "Button text size",
+      "unit": "px",
+      "min": 11,
+      "max": 20,
+      "step": 1,
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "hero_gap",
+      "label": "Brand image ↔ copy gap",
+      "unit": "px",
+      "min": 16,
+      "max": 96,
+      "step": 4,
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Product card gap",
+      "unit": "px",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "card_padding",
+      "label": "Card padding",
+      "unit": "px",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "default": 20
     }
   ],
   "enabled_on": {

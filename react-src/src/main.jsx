@@ -71,13 +71,6 @@ function readCardsPerView(el) {
 // ---------- component registrations ----------
 
 
-
-// <collection-showcase data-json-id="..."
-//   data-cards-mobile="1.2" data-cards-tablet="2" data-cards-desktop="4"
-//   data-view-all-text="View all"
-//   style="--vcs-bg: ...; --vcs-header-color: ...;"  ← set directly in Liquid,
-//   never read here. See collection-showcase-pdp.liquid.
-// ></collection-showcase>
 defineElement(
   "collection-showcase",
   () => import("./sections/CollectionShowcase.jsx"),

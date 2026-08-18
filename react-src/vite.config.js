@@ -21,6 +21,13 @@ export default defineConfig({
     minify: "esbuild",
     rollupOptions: {
       input: "src/main.jsx",
+      // @shopify/events is resolved at runtime by the theme's own
+      // <script type="importmap"> (see snippets/scripts.liquid), not by
+      // Vite/npm — it's not in node_modules. Marking it external keeps the
+      // bare `import ... from "@shopify/events"` untouched in the output so
+      // the browser resolves it via that import map, same as every other
+      // Horizon component (product-form.js, cart-icon.js, etc.).
+      external: ["@shopify/events"],
       output: {
         format: "es",
         // Keep React/ReactDOM (and any other shared node_modules code)

@@ -1,6 +1,6 @@
 import { ProductCarousel } from "../components/ProductCarousel.jsx";
 
-export default function ProductGrid({ products, viewAllUrl, viewAllText, cartAddUrl, cardsPerView }) {
+export default function ProductGrid({ products, viewAllUrl, viewAllText, cartAddUrl, cartUrl, cardsPerView }) {
   if (!products || products.length === 0) return null;
 
   return (
@@ -17,7 +17,7 @@ export default function ProductGrid({ products, viewAllUrl, viewAllText, cartAdd
         )}
       </div>
 
-      <ProductCarousel products={products} cartAddUrl={cartAddUrl} cardsPerView={cardsPerView} />
+      <ProductCarousel products={products} cartAddUrl={cartAddUrl} cartUrl={cartUrl} cardsPerView={cardsPerView} />
     </div>
   );
 }
